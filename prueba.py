@@ -103,48 +103,20 @@ def main():
 
     # Página para cargar el archivo
     st.header('Cargar Archivo Excel')
-    # archivo = st.file_uploader('Cargar archivo Excel', type=['xls', 'xlsx'])
 
-    # if archivo is not None:
 
-    #     df = cargar_datos(archivo)
-    #     st.write('Muestra del archivo cargado:')
-    #     st.write(df.head(5))
+    if 'clicked' not in st.session_state:
+        st.session_state.clicked = False
 
-    #     st.header('')
-    #     st.subheader('Seleccionar Columnas de Interés')
-    #     opciones = seleccionar_columnas_de_interes(df)
-    #     seleccion = st.multiselect('Selecciona opciones:', opciones)
+    def click_button():
+        st.session_state.clicked = True
 
-    #     # Mostrar las opciones seleccionadas
-    #     if seleccion:
-    #         st.write(f'Has seleccionado estas columnas: {", ".join(seleccion)}')
-            
-    #     else:
-    #         st.write('Aún no has seleccionado ninguna columna.')
+    st.button('Click me', on_click=click_button)
 
-    #     # # Página para mostrar resultados después de aplicar PCA
-    #     st.header('')
-    #     if st.button('Generar Resultados'):
-
-    #         columnas_seleccionadas = ','.join(seleccion).split(',')
-    #         print(columnas_seleccionadas)
-            
-    #         df_pca = aplicar_pca(df)
-
-    #         df_pca['Grupo'] = df_pca['Indice'].apply(lambda x: asignar_grupo_segun_indice(x))
-    #         df_pca.to_excel('resultados_pca.xlsx', index=False)
-            
-    #         st.write('Muestra de los resultados:')
-    #         st.write(df_pca.head(5))
-
-    #         st.write('Grafica de resultados')
-    #         fig = grafica_resultados(df_pca)
-    #         st.plotly_chart(fig)
-
-    #         if st.button('Exportar resultados'):
-    #             df_pca.to_excel('resultados_pca.xlsx', index=False)
-    #             st.write('Resultados exportados a Excel')
+    if st.session_state.clicked:
+        # The message and nested widget will remain on the page
+        st.write('Button clicked!')
+        st.slider('Select a value')
 
 if __name__ == '__main__':
     main()
