@@ -97,26 +97,44 @@ def grafica_resultados(df_result2):
     # st.plotly_chart(fig)
     return fig 
 
+def to_excel(df: pd.DataFrame):
+    from io import BytesIO
+    in_memory_fp = BytesIO()
+    df.to_excel(in_memory_fp)
+    # Write the file out to disk to demonstrate that it worked.
+    in_memory_fp.seek(0, 0)
+    return in_memory_fp.read()
+
 
 def main():
-    # st.markdown("<h1 style='text-align: center;'>Análisis de Tiendas con PCA</h1>", unsafe_allow_html=True)
+    cols = ["col1", "col2"]
+    df = pd.DataFrame.from_records([{k: 0.0 for k in cols} for _ in range(25)])
 
-    # Página para cargar el archivo
-    st.header('Cargar Archivo Excel')
+    excel_data = to_excel(df)
+    file_name = "excel.xlsx"
+    st.download_button(
+        f"Click to download {file_name}",
+        excel_data,
+        file_name,
+        f"text/{file_name}",
+        key=file_name
+    )
 
 
-    if 'clicked' not in st.session_state:
-        st.session_state.clicked = False
+    # text_contents = '''
+    # Foo, Bar
+    # 123, 456
+    # 789, 000
+    # '''
 
-    def click_button():
-        st.session_state.clicked = True
+    # # Different ways to use the API
 
-    st.button('Click me', on_click=click_button)
+    # st.download_button('Download CSV', text_contents, 'text/csv')
+    # st.download_button('Download CSV', text_contents)  # Defaults to 'text/plain'
 
-    if st.session_state.clicked:
-        # The message and nested widget will remain on the page
-        st.write('Button clicked!')
-        st.slider('Select a value')
+    # with open('myfile.csv') as f:
+    #     st.download_button('Download CSV', f)  # Defaults to 'text/
+
 
 if __name__ == '__main__':
     main()

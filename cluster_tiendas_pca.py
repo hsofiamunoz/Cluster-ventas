@@ -112,8 +112,16 @@ def grafica_pastel(df_result2):
     return fig
 
 def click_button():
-            st.session_state.clicked = True
+    st.session_state.clicked = True
         
+def to_excel(df: pd.DataFrame):
+    from io import BytesIO
+    in_memory_fp = BytesIO()
+    df.to_excel(in_memory_fp)
+    # Write the file out to disk to demonstrate that it worked.
+    in_memory_fp.seek(0, 0)
+    return in_memory_fp.read()
+
 
 def main():
     # st.markdown("<h1 style='text-align: center;'>Análisis de Tiendas con PCA</h1>", unsafe_allow_html=True)
@@ -162,16 +170,18 @@ def main():
             fig2 = grafica_pastel(df_pca)
             st.plotly_chart(fig2)
 
-            if 'clicked' not in st.session_state:
-                st.session_state.clicked = False
+            # Boton de descarga del archivo
+            excel_data = to_excel(df)
+            file_name = "resultados_modelo_pca.xlsx"
+            st.download_button(
+                f" Descargar resultados",
+                excel_data,
+                file_name,
+                f"text/{file_name}",
+                key=file_name
+            )
 
-            st.button('Exportar', on_click=click_button)
 
-            if st.session_state.clicked:
-                # The message and nested widget will remain on the page
-                st.write('Resultados exportados a Excel')
-                df_pca.to_excel('resultados_pca.xlsx', index=False)
-                
 
 if __name__ == '__main__':
     main()
