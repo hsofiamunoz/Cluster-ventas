@@ -169,8 +169,6 @@ def main():
 
             if st.session_state.clicked:
                 # The message and nested widget will remain on the page
-                st.write('Button clicked!')
-                st.slider('Select a value')
                 st.write('Resultados exportados a Excel')
                 df_pca.to_excel('resultados_pca.xlsx', index=False)
                 
