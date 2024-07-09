@@ -17,8 +17,15 @@ def seleccionar_columnas_de_interes(df):
     
 
 # Función para aplicar PCA y devolver los resultados
-def aplicar_pca(df):
-    variables_explicativas = ['CONTRIBUCION', 'ROTACION', 'VENTA_POR_MES', 'MARGEN', 'VENTA_PESOS', 'VENTA_UNDS']
+def aplicar_pca(df, variables_seleccionadas):
+
+    print(len(variables_seleccionadas))
+    if((len(variables_seleccionadas) == 1) & (variables_seleccionadas[0] == '')):
+        variables_explicativas = ['CONTRIBUCION', 'ROTACION', 'VENTA_POR_MES', 'MARGEN', 'VENTA_PESOS', 'VENTA_UNDS']
+    else: 
+        variables_explicativas = variables_seleccionadas
+    # print(df[variables_explicativas])
+    
     X = df[variables_explicativas].dropna()
     # Estandarización de los datos
     scaler = StandardScaler()
@@ -27,18 +34,40 @@ def aplicar_pca(df):
     pca = PCA()
     pca_result = pca.fit_transform(X_scaled)
     # DataFrame con resultados de PCA
-    pca_df = pd.DataFrame(pca_result, columns=[f'PC{i+1}' for i in range(pca_result.shape[1])])
+    pca_df = pd.DataFrame(pca_result, columns=[f'z{i+1}' for i in range(pca_result.shape[1])])
 
-    df_result = df.reset_index().merge(pca_df, right_index=True,left_index=True, how='left').rename(
-    columns={'PC1': 'z1', 'PC2': 'z2', 'PC3': 'z3'}
-    )
-
+    df_result = df.reset_index().merge(pca_df, right_index=True,left_index=True, how='left')
+    # ---------------------------------------------------------------------------------------------------
     # Cálculo del índice compuesto
-    df_result['Indice'] = df_result['z1'] * pca.explained_variance_ratio_[0] + \
-                        df_result['z2'] * pca.explained_variance_ratio_[1] + \
-                        df_result['z3'] * pca.explained_variance_ratio_[2]
+    # Si tenemos mas de 3 variables, entonces tomamos las primeras 3
+    len_pca_indices = len(pca.explained_variance_ratio_)
+
+    if(len_pca_indices >=3):
+        df_result['Indice'] = df_result['z1'] * pca.explained_variance_ratio_[0] + \
+                            df_result['z2'] * pca.explained_variance_ratio_[1] + \
+                            df_result['z3'] * pca.explained_variance_ratio_[2]
+    elif(len_pca_indices == 2):
+        df_result['Indice'] = df_result['z1'] * pca.explained_variance_ratio_[0] + \
+                            df_result['z2'] * pca.explained_variance_ratio_[1]
+    else:
+        df_result['Indice'] = df_result['z1'] * pca.explained_variance_ratio_[0]
+
+    # si queremos tomar todos los factores que influyen:
+    # df_result['Indice'] = 0  # Inicializa la columna Indice
+
+    # for i in range(len_pca_indices):
+    #     df_result['Indice'] += df_result[f'z{i+1}'] * pca.explained_variance_ratio_[i]
+
+    # original
+    # df_result['Indice'] = df_result['z1'] * pca.explained_variance_ratio_[0] + \
+    #                     df_result['z2'] * pca.explained_variance_ratio_[1] + \
+    #                     df_result['z3'] * pca.explained_variance_ratio_[2]
     
+
     df_result['Indice'] = df_result['Indice']*(-1)
+    # ---------------------------------------------------------------------------------------------------
+
+
     df_result = df_result[['PUNTO_VENTA', 'COD_PUNTO_VENTA', 'CONTRIBUCION', 'ROTACION', 'VENTA_POR_MES', 'MARGEN', 'VENTA_PESOS', 'VENTA_UNDS', 'Indice']]
 
     df_result = df_result.sort_values(by = 'Indice', ascending=False)
@@ -124,6 +153,7 @@ def to_excel(df: pd.DataFrame):
 
 
 def main():
+    df_pca = pd.DataFrame()
     # st.markdown("<h1 style='text-align: center;'>Análisis de Tiendas con PCA</h1>", unsafe_allow_html=True)
 
     # Página para cargar el archivo
@@ -155,10 +185,10 @@ def main():
             columnas_seleccionadas = ','.join(seleccion).split(',')
             print(columnas_seleccionadas)
             
-            df_pca = aplicar_pca(df)
+            df_pca = aplicar_pca(df, variables_seleccionadas=columnas_seleccionadas)
 
             df_pca['Grupo'] = df_pca['Indice'].apply(lambda x: asignar_grupo_segun_indice(x))
-            df_pca.to_excel('resultados_pca.xlsx', index=False)
+
             
             st.write('Muestra de los resultados:')
             st.write(df_pca.head(5))
@@ -170,16 +200,16 @@ def main():
             fig2 = grafica_pastel(df_pca)
             st.plotly_chart(fig2)
 
-            # Boton de descarga del archivo
-            excel_data = to_excel(df)
-            file_name = "resultados_modelo_pca.xlsx"
-            st.download_button(
-                f" Descargar resultados",
-                excel_data,
-                file_name,
-                f"text/{file_name}",
-                key=file_name
-            )
+        # Boton de descarga del archivo
+        excel_data = to_excel(df)
+        file_name = "resultados_modelo_pca.xlsx"
+        st.download_button(
+            f" Descargar resultados",
+            excel_data,
+            file_name,
+            f"text/{file_name}",
+            key=file_name
+        )
 
 
 
