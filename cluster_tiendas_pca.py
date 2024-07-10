@@ -12,7 +12,7 @@ def cargar_datos(archivo):
 
 
 def seleccionar_columnas_de_interes(df):
-    opciones = df.columns.tolist()
+    opciones = df.select_dtypes(include='number').columns.tolist()
     return opciones
     
 
