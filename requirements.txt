@@ -3,3 +3,4 @@ scikit-learn
 openpyxl
 plotly
 xlsxwriter
+kaleido
